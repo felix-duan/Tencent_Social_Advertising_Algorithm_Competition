@@ -11,12 +11,12 @@
 
 
 #echo 'add_one_column ........'
-#python3 ./add_one_column.py
+python3 ./add_one_column.py
 #
 #
 #echo 'merge csv use very small memory ........'
-#python3 ./merge_use_small_dtype.py train   1
-#python3 ./merge_use_small_dtype.py test    1
+python3 ./merge_use_small_dtype.py train   1
+python3 ./merge_use_small_dtype.py test    1
 
 
 sleep 10
