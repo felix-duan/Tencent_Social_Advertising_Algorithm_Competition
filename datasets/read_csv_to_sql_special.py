@@ -11,8 +11,8 @@ if len(sys.argv)!=3:
 csv_file=sys.argv[1]
 database_name=sys.argv[2]
 table_name='tb_'+sys.argv[1].split('/')[-1].split('.')[0]
-print database_name
-print table_name
+print(database_name)
+print(table_name)
 
 #####
 engine=create_engine('mysql://root:0@localhost/'+database_name+'?charset=utf8')
@@ -34,7 +34,7 @@ def dfs_to_sql(dfs):
         df['is_installed_this_app_long']= df['is_installed_this_app_long'].fillna(value=0).astype('int16')
         df.to_sql(table_name,   engine, index=False, if_exists ='append')
         if is_first:
-            print df[:10]
+            print(df[:10])
             is_first = False
 
 
@@ -51,7 +51,7 @@ except:
 if not has_columns:
     print ("please input the "+str(df.shape[1])+' columns name')
     columns=raw_input("please split with ',': \n").split(',')
-    print "columns: ",columns
+    print("columns: ",columns)
     try:
         dfs = pd.read_csv(csv_file, names=columns, encoding="utf8", dtype='int32', chunksize=c_size)
         dfs_to_sql(dfs)
