@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 #important_feats_csv = './features_after_corr_select.txt'
 #important_feats     = list(set([f.strip() for f in open(important_feats_csv).readlines() if f.strip()]))
 #important_feats = None
-#print 'important_feats :  ',len(important_feats)
+#print('important_feats :  ',len(important_feats))
 
 
 def is_firstlastone(x):
@@ -64,7 +64,7 @@ def get_need_feats(csvs, is_rate = True, is_tiny=False, important_feats=[]):
     '''
     concat csvs to df_concat 
     '''
-    #print csvs
+    #print(csvs)
     if not csvs:
         return pd.DataFrame()
     is_first    = True
@@ -83,12 +83,12 @@ def get_need_feats(csvs, is_rate = True, is_tiny=False, important_feats=[]):
         feats_all+= need_feats
         is_first   = False
     #feats_all = list(set(feats_all))
-    #print len(feats_all)
+    #print(len(feats_all))
     ## delete duplicate feats
     #df_concat = df_concat[feats_all]
     try:
-        print df_concat.shape
-        print df_concat.info()
+        print(df_concat.shape)
+        print(df_concat.info())
         return df_concat
     except:
         return pd.DataFrame()
@@ -128,7 +128,7 @@ def print_time(i):
     global t1, t2
     t2 = time.time()
     try:
-        t3 = t2-t1; print " this step "+str(i)+" run_time:  ",t3,'\n'
+        t3 = t2-t1; print(" this step "+str(i)+" run_time:  ",t3,'\n')
     except:
         pass
     t1 = time.time()

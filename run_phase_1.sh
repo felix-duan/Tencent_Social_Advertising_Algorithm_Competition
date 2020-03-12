@@ -4,7 +4,7 @@
 #
 #
 #
-unzip pre.zip
+#unzip pre.zip
 mv ./pre/* ./datasets/train/
 
 
