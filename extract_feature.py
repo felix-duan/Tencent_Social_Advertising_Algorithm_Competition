@@ -104,7 +104,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
         os.makedirs(feat_dir+mode)
     ##for feats in tqdm(itertools.combinations(base_feats, n_feats)):
     featset_feats = base_feats + ['label']
-    featset_feats = [featset_feats[i * 5 : (i+1) * 5] for i in range(len(featset_feats) / 5 + 1)]
+    featset_feats = [featset_feats[i * 5 : (i+1) * 5] for i in range(len(featset_feats) // 5 + 1)]
     print ('read  dataset and featset ......' )
     is_first = True
     for cols in featset_feats:
@@ -113,6 +113,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
         is_first = False
     data_set_total  = pd.read_csv(data_set_path, usecols = base_feats).apply(small_dtype)
     def func_feats(feats):
+        print("****************the process is going*************************")
         time1 = time.time()
         feats=list(feats)
         suffix      = reduce(lambda f1,f2: f1+'_'+f2,  feats)
@@ -216,7 +217,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
 
 
 def use_feature_cnt_v2(mode):
-    print("****************the process is going*************************")
+
     if mode == 'train':
         ##### train:  data_set1   27   feat_set1     17->26
         feature_cnt_v2(dataset1_csv, featset1_csv,  'train')
