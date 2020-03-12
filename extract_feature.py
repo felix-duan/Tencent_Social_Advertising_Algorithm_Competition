@@ -98,7 +98,6 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
     '''this func will use less Memory, but will use more time
         and this func add some extra feature
     '''
-    print("****************the process is going*************************")
     if rm_and_re_extract_feats:
 
         os.system('rm -r '+feat_dir+mode)
@@ -217,6 +216,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
 
 
 def use_feature_cnt_v2(mode):
+    print("****************the process is going*************************")
     if mode == 'train':
         ##### train:  data_set1   27   feat_set1     17->26
         feature_cnt_v2(dataset1_csv, featset1_csv,  'train')
@@ -243,7 +243,10 @@ def main_v2():
     get_rank_feats_to_csv('dataset4', groupby_feats = ['userID','creativeID'])
     modes = ['train', 'valid','test', 'extra_1']
 
-    map(use_feature_cnt_v2,   modes[:])
+    use_feature_cnt_v2(modes[0])
+    use_feature_cnt_v2(modes[1])
+    use_feature_cnt_v2(modes[2])
+    use_feature_cnt_v2(modes[3])
 
 
 
