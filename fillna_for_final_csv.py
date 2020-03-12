@@ -15,8 +15,8 @@ def main(mode='train'):
         df = df.astype('int32')
         df.to_csv(final_data_file, mode = 'a', index=False, header = is_first)
         if is_first:
-            print df.info()
-            print df[:10]
+            print (df.info())
+            print (df[:10])
             is_first = False
 
 main('train')

@@ -78,7 +78,7 @@ global_feats_csvs = [f.strip() for f in os.listdir('./feats/train/') if f.strip(
 #'click_day_hour_minu_s1_distance_to_lastone',
 #'click_day_hour_minu_s1_distance_to_firstone',
 #]
-#print rank_feats
+#print (rank_feats)
 base_feats= ['positionID', 'connectionType', 'camgaignID','creativeID', 'advertiserID', 'appID', 'userID',  'adID', 'gender',
              'is_installed_this_app_long']
             # ,'telecomsOperator','appPlatform', 'age','education', 'marriageStatus','haveBaby','hometown',
@@ -116,12 +116,12 @@ params_0 = {
 
 
 def get_concat_data(label_csv, label_col, other_csvs, is_rate, important_feats):
-    print 'important_feats :  ',len(important_feats)
+    print ('important_feats :  ',len(important_feats))
     rank_feats  = [f for f in get_csv_header(dataset1_csv) if 'click' in f]
     rank_feats  = [f for f in rank_feats if f in important_feats] if important_feats else rank_feats
     X           = pd.read_csv(label_csv, usecols = rank_feats+[label_col]).apply(small_dtype)
     X           = X[:1000000] if is_tiny else X
-    print 'concat csvs ......'
+    print ('concat csvs ......')
     X           = pd.concat([X, get_need_feats(other_csvs, is_rate, is_tiny, important_feats)], axis=1)
     #if label_csv.split('/')[-1] == 'dataset2.csv':
     #    for c in X.columns:
@@ -131,21 +131,21 @@ def get_concat_data(label_csv, label_col, other_csvs, is_rate, important_feats):
     if is_to_csv:
         save_file = label_csv.split('.csv')[0]+'_concat.csv'
         if os.path.exists(save_file):
-            print save_file + " has exists"
+            print (save_file + " has exists")
         else:
-            print 'to csv ........'
+            print ('to csv ........')
             X            = X.replace(np.nan, -1)
             X            = X.replace(np.inf, -2)
             X[feat_cols] = scale(X[feat_cols]).astype('float16')
             X.to_csv(save_file, index=False, chunksize = 50000)
-    print X.shape
+    print (X.shape)
     # TODO cate_feats = [f for f in X.columns if 'click' in f] 
     ## 据说这一步可以带来 3 个千分点的提升,因为rank_feats 实际上是类别变量
     X,      = change_to_category([X], cate_feats)
     y       = X[label_col].values
     X       = X[feat_cols]
     if label_col == 'label':
-        print 'positive percent ',y.mean()
+        print ('positive percent ',y.mean())
     return X, y
 
     
@@ -156,7 +156,7 @@ def get_data_by_type_by_feats(model='lgb', use_type='train_total',set_csvs=[], n
     ''' if set_csvs: then concat more feats 
         else:        just use rank_feats
     '''
-    print "load data ......"
+    print ("load data ......")
     dataset1_add_csvs   = ['./feats/train/'+csv     for csv in set_csvs]
     dataset2_add_csvs   = ['./feats/valid/'+csv     for csv in set_csvs]
     dataset4_add_csvs   = ['./feats/extra_1/'+csv   for csv in set_csvs]
@@ -179,20 +179,20 @@ def get_data_by_type_by_feats(model='lgb', use_type='train_total',set_csvs=[], n
                 X_valid = X_valid.replace(np.nan,-1)
                 return X_train, y_train, X_valid, y_valid
             if model == 'lgb':
-                print ' lgb Dataset .....'
+                print (' lgb Dataset .....')
                 X_train = lgb.Dataset(X_train,  y_train)
-                print ' lgb Dataset .....'
+                print (' lgb Dataset .....')
                 X_valid = lgb.Dataset(X_valid,  y_valid, reference=X_train)
                 return X_train, X_valid
 
         if use_type == 'train_total':
             X_train        = pd.concat([X_train, X_valid],       axis=0)
             y_train        = np.concatenate([y_train, y_valid],  axis=0)
-            print X_train.shape
+            print (X_train.shape)
             if model == 'lr':
                 return X_train, y_train
             if model == 'lgb':
-                print ' lgb Dataset .....'
+                print (' lgb Dataset .....')
                 X_train = lgb.Dataset(X_train, y_train)
                 return X_train
 
@@ -204,7 +204,7 @@ def get_data_by_type_by_feats(model='lgb', use_type='train_total',set_csvs=[], n
         if model =='lgb':
             return X_test, instanceID.astype('int32')
 
-    print 'return None'
+    print ('return None')
     return None
 
 
@@ -214,7 +214,7 @@ def get_data_by_type_by_feats(model='lgb', use_type='train_total',set_csvs=[], n
 
 
 def lr_model_get_prob(feats):
-    print "lr model training in split train_set "
+    print ("lr model training in split train_set ")
     ##### lr model 
     X_train, y_train ,X_valid, y_valid = get_data_by_type_by_feats('lr', 'train_valid', feats)
     lr = LogisticRegression()
@@ -223,15 +223,15 @@ def lr_model_get_prob(feats):
     prob_valid = lr.predict_proba(X_valid)[:,1].reshape(-1,1)
     eval_train = round(logloss(y_train, prob_train), 6)
     eval_valid = round(logloss(y_valid, prob_valid), 6)
-    print 'lr eval_train eval_valid----- ', eval_train, eval_valid
+    print ('lr eval_train eval_valid----- ', eval_train, eval_valid)
     ### train_total
-    print 'lr train again'
+    print ('lr train again')
     X_train, y_train, X_valid, y_valid = 0, 0, 0, 0
     X_train_total, y_train_total = get_data_by_type_by_feats('lr', 'train_total', feats)
     lr.fit(X_train_total, y_train_total)
     prob_train_total= lr.predict_proba(X_train_total)[:,1].reshape(-1,1)
     ### test 
-    print 'lr test '
+    print ('lr test ')
     X_train_total = 0
     X_test, instanceID = get_data_by_type_by_feats('lr', 'test', feats) 
     proba_test      = lr.predict_proba(X_test)[:,1].reshape(-1,1)
@@ -259,16 +259,16 @@ def train_test(mode, feat_csvs, need_feats=global_important_feats):
                     valid_sets      = Dataset_valid,
                     fobj = None,    feval=self_eval, 
                     early_stopping_rounds = 10)
-    print gbm.eval_valid(self_eval)
+    print (gbm.eval_valid(self_eval))
     eval_train = round(gbm.eval_train(self_eval)[0][2], 6)
     eval_valid = round(gbm.eval_valid(self_eval)[0][2], 6)
     
 
 
     ##### eval valid
-    print "# eval train and valid"
-    print 'eval train log loss = ',eval_train
-    print 'eval valid log loss = ',eval_valid
+    print ("# eval train and valid")
+    print ('eval train log loss = ',eval_train)
+    print ('eval valid log loss = ',eval_valid)
     with open('./feature_name_importance.txt', 'a') as fa:
         now_time=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
         fa.writelines('\n\n\n\n\n************* new model ************')
@@ -286,9 +286,9 @@ def train_test(mode, feat_csvs, need_feats=global_important_feats):
 
 
 
-    print 'model training in total train_set'
+    print ('model training in total train_set')
     try:
-        print ' gbm.best_iteration: ',gbm.best_iteration
+        print (' gbm.best_iteration: ',gbm.best_iteration)
         num_round  = int(gbm.best_iteration*num_boost_round_scale) if gbm.best_iteration!=-1 else gbm.current_iteration()
     except:
         eval_train  = '_'
@@ -296,7 +296,7 @@ def train_test(mode, feat_csvs, need_feats=global_important_feats):
         num_round   = 500
     #####  use total train_set train again
     Dataset_train_total = get_data_by_type_by_feats(model = 'lgb', use_type = 'train_total', set_csvs = feat_csvs, need_feats = need_feats)
-    print 'train again .......'
+    print ('train again .......')
 
     gbm = lgb.train(params = params_0,    
                     train_set   = Dataset_train_total,
@@ -304,12 +304,12 @@ def train_test(mode, feat_csvs, need_feats=global_important_feats):
                     num_boost_round = num_round,
                     fobj = None,    feval=self_eval)
     X_test ,instanceID  = get_data_by_type_by_feats(model = 'lgb', use_type = 'test', set_csvs = feat_csvs, need_feats = need_feats)
-    print 'test .......'
+    print ('test .......')
     proba_test = gbm.predict(X_test, gbm.best_iteration)
     
 
     ## submission prepare dirs
-    print "# submission"
+    print ("# submission")
     sub_dir_name  = './datasets/submit/lgb_train_split_'+str(split_time)+'_tra_'+str(eval_train)+'_val_'+str(eval_valid)+'/'
     sub_file_name = sub_dir_name+'submission.csv'
     os.system('rm -r '+sub_dir_name)
@@ -318,7 +318,7 @@ def train_test(mode, feat_csvs, need_feats=global_important_feats):
     df = pd.DataFrame({"instanceID": instanceID, "prob": proba_test})
     df.sort_values("instanceID", inplace=True)
     df.to_csv(sub_file_name, index=False, chunksize=50000)
-    print 'save file to ',sub_file_name
+    print ('save file to ',sub_file_name)
 
 
 
@@ -340,7 +340,7 @@ def run_model_test_csvs(init_feats_num = '0:10', extra_feats_num = '10:46'):
         eval_train, eval_valid  = train_test(mode='just_valid',feat_csvs = temp_feats)
         context = '\n**** extra_feat =  '+str(add_feats)+'\n**** eval_train , eval_valid = '+str(eval_train)+', '+str(eval_valid)
         subject = 'TSA_contest'
-        print context
+        print (context)
         if i == 0:
             context_concat  = context
         else:
@@ -358,7 +358,7 @@ def run_model_test_csvs(init_feats_num = '0:10', extra_feats_num = '10:46'):
 def run_model_test_feats(init_feats_num = '0:10', extra_feats_num = '10:46'):
     ''' if is_test_feats:  extra_feats  is necessary
     '''
-    print init_feats_num
+    print (init_feats_num)
     n1,n2 = [int(n) for n in init_feats_num.split(':')]
     n3,n4 = [int(n) for n in extra_feats_num.split(':')]
     init_feats  = global_important_feats[n1:n2]
@@ -376,7 +376,7 @@ def run_model_test_feats(init_feats_num = '0:10', extra_feats_num = '10:46'):
         eval_train, eval_valid  = train_test(mode='just_valid',feat_csvs = global_feats_csvs, need_feats = init_feats)#temp_feats)
         context = '\n**** extra_feat =  '+str(add_feats)+'\n**** eval_train , eval_valid = '+str(eval_train)+', '+str(eval_valid)
         subject = 'TSA_contest'
-        print context
+        print (context)
         if i == 0:
             context_concat  = context
         else:
@@ -388,12 +388,12 @@ def run_model_test_feats(init_feats_num = '0:10', extra_feats_num = '10:46'):
                 pass
         #*************************************************************************
         if best_valid - eval_valid < 8e-5:
-            print 'delte this feats --- ',add_feats
+            print ('delte this feats --- ',add_feats)
             init_feats = [f for f in init_feats if f not in add_feats]
         else:
             best_train, best_valid = eval_train, eval_valid
-        print '*** best_train, best_valid ***',best_train, best_valid
-        print '********* cur_feats_num ******',len(init_feats)
+        print ('*** best_train, best_valid ***',best_train, best_valid)
+        print ('********* cur_feats_num ******',len(init_feats))
         #*************************************************************************
     with open('./feature_name_importance.txt', 'a') as fa:
         fa.writelines(context_concat)
@@ -416,5 +416,5 @@ if __name__ == '__main__':
     t1= time.time()
     fire.Fire(train_main)
     t2= time.time()
-    print 'run: ',t2-t1
+    print ('run: ',t2-t1)
 

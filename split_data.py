@@ -32,7 +32,7 @@ def fix_label(df, click_day):
 
 
 def main():
-    print './datasets/dataset/ will be remove' 
+    print ('./datasets/dataset/ will be remove' )
     os.system('rm -r '+dataset_path)
     os.makedirs(dataset_path)
     os.system(' cp {0} {1} '.format(test_csv, dataset3_csv))
@@ -48,9 +48,9 @@ def main():
     dftrains     = pd.read_csv(train_csv,chunksize=500000)
     need_header = True
     
-    print 'split data .....'
+    print ('split data .....')
     for df in tqdm(dftrains):
-        #print df[:10]
+        #print (df[:10])
         df['click_day']     = (df.clickTime / 1000000).astype('int8')
         df['appCategory_1'] = df['appCategory'].apply(lambda x: int(x / 100) if x >= 100 else x).astype('int8')
         df['appCategory_2'] = df['appCategory'].apply(lambda x: int(x % 100) if x >= 100 else -1).astype('int8')

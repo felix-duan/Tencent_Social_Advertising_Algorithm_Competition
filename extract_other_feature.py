@@ -41,10 +41,10 @@ def cond_prob_feat(data_set_path, feat_set_path, mode = 'train', cond=['userID',
                 ((data_set[fset_con_num_cnt]+alpha) * 1.0 / (data_set[fset_total_cnt]+beta)).astype('float16')
     
     need_cols = [f for f in data_set.columns.tolist() if f not in feats]
-    print data_set[:5]
-    print '*************************************** write data ............'
+    print( data_set[:5])
+    print ('*************************************** write data ............')
     data_set[need_cols].to_csv(save_csv, mode='w', index=False,chunksize=100000)
-    print 'run time -----',time.time() - time1
+    print ('run time -----',time.time() - time1)
 
 
 

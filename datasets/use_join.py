@@ -1,6 +1,7 @@
 import os
 import fire
-import pandas 
+import pandas
+from functools import reduce
 
 
 def get_csv_header(csv1):

@@ -11,6 +11,7 @@ import os
 from utils import * 
 from tqdm import tqdm
 from split_data import *
+from functools import reduce
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 
@@ -22,7 +23,7 @@ tqdm        = lambda x: x
 feat_dir    = './feats/'
 data_dir    ='./datasets/train/'
 split_time  =270000
-print "split_time: ",split_time
+print ("split_time: ",split_time)
 
 rm_and_re_extract_feats = True
 base_feats= ['positionID', 'connectionType', 'camgaignID','creativeID', 'advertiserID', 'appID', 'userID',  'adID', 'gender',
@@ -31,7 +32,7 @@ base_feats= ['positionID', 'connectionType', 'camgaignID','creativeID', 'adverti
 
 
 def get_rank_feats_to_csv(mode='dataset1', groupby_feats = ['userID','creativeID']):
-    print 'get_rank_feats_to_csv    process .... '+mode
+    print ('get_rank_feats_to_csv    process .... '+mode)
     t = pd.read_csv('./datasets/dataset/' + mode +'.csv').apply(small_dtype)
     t['click_day']              = t.clickTime.apply(lambda x: int(str(int(x))[:-6])).astype('int16')
     t['click_day_hour']         = t.clickTime.apply(lambda x: int(str(int(x))[:-4])).astype('int16')
@@ -57,7 +58,7 @@ def get_rank_feats_to_csv(mode='dataset1', groupby_feats = ['userID','creativeID
         t2                      = (t2[['idx',  key+'_click_number', key+'_max_idx', key+'_min_idx']]).apply(small_dtype)
     
         t                       = pd.merge(t,t2,on='idx',how='left')
-        print t.info()
+        print (t.info())
         t[key+'_click_number']  = t[key+'_click_number'].fillna(1).astype('int32')
         t[key + '_lastone']     = (t[key+'_max_idx'] - t['idx']).apply(is_firstlastone)
         t[key + '_firstone']    = (t['idx'] - t[key+'_min_idx']).apply(is_firstlastone)
@@ -69,11 +70,11 @@ def get_rank_feats_to_csv(mode='dataset1', groupby_feats = ['userID','creativeID
         t3                      = t[groupby_feats + [key,'clickTime']]
         t3['temp_clickTime']    = t3.clickTime.astype('str')
         t3                      = t3.groupby(groupby_feats + [key])['temp_clickTime'].agg(lambda x:':'.join(x)).reset_index()
-        print t3.info()
+        print (t3.info())
 
         t2                      = t[groupby_feats + [key,'clickTime', 'idx']]
         t2                      = pd.merge(t2, t3, 'inner',on = groupby_feats + [key])
-        print t2.info()
+        print (t2.info())
 
         t2[key+'_click_number'] = t2['temp_clickTime'].apply(lambda s:len(s.split(':')))
         t2                      = t2[t2[key+'_click_number']>1]
@@ -86,7 +87,7 @@ def get_rank_feats_to_csv(mode='dataset1', groupby_feats = ['userID','creativeID
         t[key + '_distance_to_firstone']    = (t['clickTime'] - t[key+'_min_clickTime']).apply(compute_distance)
         t                       = t.drop([key+'_max_clickTime', key+'_min_clickTime'],axis=1).apply(small_dtype)
     ### *****************************************************************************
-    print t[:10]
+    print (t[:10])
     t.to_csv('./datasets/dataset/' + mode + '.csv', index=False, chunksize=500000)
     
 
@@ -103,7 +104,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
     ##for feats in tqdm(itertools.combinations(base_feats, n_feats)):
     featset_feats = base_feats + ['label']
     featset_feats = [featset_feats[i * 5 : (i+1) * 5] for i in range(len(featset_feats) / 5 + 1)]
-    print 'read  dataset and featset ......' 
+    print ('read  dataset and featset ......' )
     is_first = True
     for cols in featset_feats:
         df       = pd.read_csv(feat_set_path, usecols = cols).apply(small_dtype)
@@ -126,7 +127,7 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
         total_cnt_dset_in_fset_rate     = suffix + suffix_day + '_total_cnt_d_in_f_rate'
         fset_label_1_cnt                = suffix + suffix_day + '_fset_label_1_cnt'
         fset_label_1_cnt_in_total_rate  = suffix + suffix_day + '_fset_label_1_cnt_in_total_rate'
-        print ' processing ..... '+suffix
+        print (' processing ..... '+suffix)
         ###### for total cnt
         # for feat_set
         #featset                  = pd.read_csv(feat_set_path,usecols=feats+['label']).apply(small_dtype)
@@ -145,18 +146,18 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
             t                     = featset[[f]].copy()
             t[single_f_cnt]       = np.ones([len(t),],  dtype='int32')
             t                     = t.groupby(f).agg('sum').reset_index()
-            #print t[:10]
-            #print '***************************************'
+            #print (t[:10])
+            #print ('***************************************')
             data_set              = pd.merge(data_set, t, how='left', on=f)
             data_set[single_f_cnt]= pd.to_numeric(data_set[single_f_cnt].fillna(0).astype('int32'), downcast = 'integer')
-            #print data_set[:10]
-            #print '***************************************'
+            #print (data_set[:10])
+            #print ('***************************************')
             data_set[f_rate]      = ((data_set[fset_total_cnt]+alpha) * 1.0 / (data_set[single_f_cnt]+beta)).astype('float16')
-        #print data_set.info()
+        #print (data_set.info())
         data_set                  = data_set.apply(small_dtype)
-        #print data_set.info()
-        #print data_set[:10]
-        #print '***************************************'
+        #print (data_set.info())
+        #print (data_set[:10])
+        #print ('***************************************')
         # for data_set
         t                         = data_set[feats]
         t[dset_total_cnt]         = np.ones([len(t),], dtype='int32')
@@ -168,9 +169,9 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
         ### 点击日当天的　label 我们是不知道的, 只知道当天点击了多少次
         ### TODO 可以改用点击日之前所有的天的　label 
             need_cols = [f for f in data_set.columns.tolist() if f not in feats]
-            print '*************************************** write data ............'
+            print ('*************************************** write data ............')
             data_set[need_cols].to_csv(save_csv, mode='w', index=False)
-            print 'run time -----',time.time()-time1
+            print ('run time -----',time.time()-time1)
             return
         ######　下面的这些涉及到 label 那么就只能在feat_set上面提取
         ### for label 1
@@ -199,10 +200,10 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
                 ((data_set[fset_label_1_cnt]+alpha) * 1.0 / (data_set[fset_total_cnt]+beta)).astype('float16')
         ###TODO tranfer_rate 是否需要 fillna -1
         need_cols = [f for f in data_set.columns.tolist() if f not in feats]
-        #print data_set[:5]
-        print '*************************************** write data ............'
+        #print (data_set[:5])
+        print ('*************************************** write data ............')
         data_set[need_cols].to_csv(save_csv, mode='w', index=False,chunksize=100000)
-        print 'run time -----',time.time()-time1
+        print ('run time -----',time.time()-time1)
     
     ##### map the func_feats
     map(func_feats, list(itertools.combinations(base_feats, n_feats)))
