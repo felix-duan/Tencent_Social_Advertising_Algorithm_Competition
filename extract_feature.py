@@ -98,7 +98,9 @@ def feature_cnt_v2(data_set_path, feat_set_path, mode = 'train', n_feats=2, befo
     '''this func will use less Memory, but will use more time
         and this func add some extra feature
     '''
+    print("****************the process is going*************************")
     if rm_and_re_extract_feats:
+
         os.system('rm -r '+feat_dir+mode)
         os.makedirs(feat_dir+mode)
     ##for feats in tqdm(itertools.combinations(base_feats, n_feats)):
